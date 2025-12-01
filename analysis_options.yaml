@@ -1,0 +1,77 @@
+# This file configures the analyzer, which statically analyzes Dart code to
+# check for errors, warnings, and lints.
+#
+# The issues identified by the analyzer are surfaced in the UI of Dart-enabled
+# IDEs (https://dart.dev/tools#ides-and-editors). The analyzer can also be
+# invoked from the command line by running `flutter analyze`.
+
+# 基础引入 Flutter 推荐的代码规范
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  # 排除不需要分析的文件/目录
+  exclude:
+    - "**/*.g.dart"         # 自动生成的代码
+    - "**/*.freezed.dart"   # Freezed 生成的代码
+    - "**/generated_plugin_registrant.dart"  # 插件注册文件
+    - "**/l10n/*.dart"      # 国际化自动生成文件
+    - "**/test/mocks/*.dart" # 测试用的 mock 文件
+
+  # 严格模式配置
+  strong-mode:
+    implicit-casts: false   # 禁止隐式类型转换
+    implicit-dynamic: false # 禁止隐式 dynamic 类型
+
+  # 额外的分析选项
+  errors:
+    # 将某些警告提升为错误，强制修复
+    missing_required_param: error
+    missing_return: error
+    unused_local_variable: warning
+    unused_import: warning
+    dead_code: error
+    invalid_annotation_target: ignore
+
+linter:
+  # 自定义 lint 规则（覆盖或扩展 flutter_lints 中的配置）
+  rules:
+    # 基础代码风格
+    prefer_single_quotes: true                # 优先使用单引号
+    avoid_double_and_int_checks: true         # 避免对 double 和 int 进行不必要的检查
+    camel_case_types: true                    # 类型名使用驼峰式（首字母大写）
+
+    # 空安全相关
+    avoid_null_checks_in_equality_operators: true  # 避免在相等运算符中使用空检查
+
+    # 代码简洁性
+    avoid_init_to_null: true                  # 避免初始化时赋值为 null
+    prefer_conditional_assignment: true       # 优先使用条件赋值（??=）
+    prefer_const_constructors: true           # 优先使用 const 构造函数
+    prefer_const_literals_to_create_immutables: true  # 优先使用 const 字面量创建不可变对象
+    prefer_is_empty: true                     # 优先使用 isEmpty 而非 length == 0
+    prefer_is_not_empty: true                 # 优先使用 isNotEmpty 而非 length != 0
+    unnecessary_null_in_if_null_operators: true  # 避免在 ?? 运算符中使用不必要的 null
+
+    # 安全性
+    avoid_dynamic_calls: true                 # 避免动态调用（dynamic 类型的方法调用）
+
+    # 性能相关
+    avoid_redundant_argument_values: true     # 避免传递与默认值相同的参数
+    prefer_final_in_for_each: true            # for-each 循环中的变量优先用 final
+    prefer_final_locals: true                 # 局部变量优先用 final
+
+    # 可维护性
+    always_declare_return_types: true         # 始终声明返回类型（包括 void）
+    annotate_overrides: true                  # 重写方法必须添加 @override 注解
+    avoid_empty_else: true                    # 避免空的 else 块
+    avoid_unused_constructor_parameters: true # 避免未使用的构造函数参数
+    constant_identifier_names: true           # 常量名使用全大写+下划线
+    library_names: true                       # 库名使用小写+下划线
+    library_prefixes: true                    # 库前缀使用小写+下划线
+    no_duplicate_case_values: true            # 禁止 switch case 中重复的值
+    sort_constructors_first: true             # 构造函数放在类成员的最前面
+    sort_pub_dependencies: true               # pubspec.yaml 中的依赖按字母排序
+
+    # 禁用不适合项目的规则（根据实际情况调整）
+    avoid_print: false                        # 允许使用 print（调试时常用）
+    public_member_api_docs: false             # 不强制公共成员必须有文档注释（小型项目可关闭）
