@@ -1,8 +1,8 @@
-name: Build Flutter Windows App
+name: Build and Release Flutter Windows App
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -27,8 +27,40 @@ jobs:
       - name: Build Windows executable
         run: flutter build windows --release
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - name: Package executable into ZIP
+        run: |
+          mkdir -p release
+          cd build/windows/runner/Release
+          zip -r ../../../release/FlutterApp-Windows.zip *
+
+      - name: Get latest tag
+        id: get_tag
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "latest_tag=$latest_tag"
+          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
+
+      - name: Increment version
+        id: inc_version
+        run: |
+          IFS='.' read -r major minor patch <<<"${{ steps.get_tag.outputs.latest_tag#v }}"
+          patch=$((patch + 1))
+          new_tag="v$major.$minor.$patch"
+          echo "new_tag=$new_tag"
+          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
         with:
-          name: windows-exe
-          path: build/windows/runner/Release/
+          tag_name: ${{ steps.inc_version.outputs.new_tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload ZIP to Release
+        uses: actions/upload-release-asset@v2
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release/FlutterApp-Windows.zip
+          asset_name: FlutterApp-Windows.zip
+          asset_content_type: application/zip
