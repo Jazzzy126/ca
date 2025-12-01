@@ -14,7 +14,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # 2️⃣ 安装 Flutter
+      # 2️⃣ 安装 Flutter SDK
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -39,37 +39,19 @@ jobs:
           cd build/windows/runner/Release
           zip -r ../../../release/FlutterApp-Windows.zip *
 
-      # 7️⃣ 获取最新 tag
-      - name: Get latest tag
-        id: get_tag
-        run: |
-          latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
-
-      # 8️⃣ 增加 patch 版本号
-      - name: Increment version
-        id: inc_version
-        run: |
-          tag_no_v=${{ steps.get_tag.outputs.latest_tag }}
-          tag_no_v=${tag_no_v#v}
-          IFS='.' read -r major minor patch <<< "$tag_no_v"
-          patch=$((patch + 1))
-          new_tag="v$major.$minor.$patch"
-          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
-
-      # 9️⃣ 上传 artifact 方便在 Actions 页面下载
+      # 7️⃣ 上传 artifact（可在 Actions 页面下载）
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: FlutterApp-Windows
           path: release/FlutterApp-Windows.zip
 
-      # 🔟 创建 GitHub Release 并上传 ZIP
+      # 8️⃣ 创建 GitHub Release 并上传 ZIP
       - name: Create GitHub Release with ZIP
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.inc_version.outputs.new_tag }}
-          name: Release ${{ steps.inc_version.outputs.new_tag }}
+          tag_name: ${{ github.sha }}
+          name: Release ${{ github.sha }}
           files: release/FlutterApp-Windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
