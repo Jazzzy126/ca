@@ -10,45 +10,61 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # 1️⃣ 检出代码
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      # 2️⃣ 安装 Flutter
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: 'stable'
 
+      # 3️⃣ 启用 Windows Desktop 支持
       - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
 
+      # 4️⃣ 获取依赖
       - name: Get dependencies
         run: flutter pub get
 
+      # 5️⃣ 构建 Windows 可执行文件
       - name: Build Windows executable
         run: flutter build windows --release
 
+      # 6️⃣ 打包成 ZIP
       - name: Package executable into ZIP
         run: |
           mkdir -p release
           cd build/windows/runner/Release
           zip -r ../../../release/FlutterApp-Windows.zip *
 
+      # 7️⃣ 获取最新 tag
       - name: Get latest tag
         id: get_tag
         run: |
           latest_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
-          echo "latest_tag=$latest_tag"
           echo "latest_tag=$latest_tag" >> $GITHUB_OUTPUT
 
+      # 8️⃣ 增加 patch 版本号
       - name: Increment version
         id: inc_version
         run: |
-          IFS='.' read -r major minor patch <<<"${{ steps.get_tag.outputs.latest_tag#v }}"
+          tag_no_v=${{ steps.get_tag.outputs.latest_tag }}
+          tag_no_v=${tag_no_v#v}
+          IFS='.' read -r major minor patch <<< "$tag_no_v"
           patch=$((patch + 1))
           new_tag="v$major.$minor.$patch"
-          echo "new_tag=$new_tag"
           echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
 
+      # 9️⃣ 上传 artifact 方便在 Actions 页面下载
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: FlutterApp-Windows
+          path: release/FlutterApp-Windows.zip
+
+      # 🔟 创建 GitHub Release
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v2
@@ -57,6 +73,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      # 1️⃣1️⃣ 上传 ZIP 到 Release
       - name: Upload ZIP to Release
         uses: actions/upload-release-asset@v2
         with:
