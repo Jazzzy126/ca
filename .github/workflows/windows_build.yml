@@ -64,20 +64,12 @@ jobs:
           name: FlutterApp-Windows
           path: release/FlutterApp-Windows.zip
 
-      # 🔟 创建 GitHub Release
-      - name: Create GitHub Release
-        id: create_release
+      # 🔟 创建 GitHub Release 并上传 ZIP
+      - name: Create GitHub Release with ZIP
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.inc_version.outputs.new_tag }}
+          name: Release ${{ steps.inc_version.outputs.new_tag }}
+          files: release/FlutterApp-Windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # 1️⃣1️⃣ 上传 ZIP 到 Release
-      - name: Upload ZIP to Release
-        uses: actions/upload-release-asset@v2
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: release/FlutterApp-Windows.zip
-          asset_name: FlutterApp-Windows.zip
-          asset_content_type: application/zip
